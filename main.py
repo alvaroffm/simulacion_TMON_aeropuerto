@@ -15,6 +15,25 @@ from input import tabla_lambdas
 def aeropuerto(seed = 12345, freq = 30, time = 720, c = 5, Cola_max = 35, service_time = np.array([0.5, 1, 1.5]),
                probabilities_nextS = [0.25, 0.6, 0.15]):
 
+    """
+    Simula el funcionamiento de un sistema de atención de pasajeros en un aeropuerto.
+
+    Parámetros:
+    - seed (int): Semilla para la generación de números aleatorios (por defecto 12345).
+    - freq (int): Frecuencia para calcular la media de la cola (por defecto 30 minutos).
+    - time (int): Tiempo total de simulación en minutos (por defecto 720 minutos).
+    - c (int): Número inicial de servidores activos (por defecto 5).
+    - Cola_max (int): Límite máximo de la cola antes de abrir nuevos servidores (por defecto 40).
+    - service_time (numpy array): Tiempos de servicio para cada servidor (por defecto [0.5, 1, 1.5]).
+    - probabilities_nextS (list): Probabilidades para elegir el próximo tiempo de servicio (por defecto [0.25, 0.6, 0.15]).
+
+    Retorna:
+    - data_aero (DataFrame): DataFrame que contiene la información de la simulación, con columnas como 't' (tiempo),
+      'Cola' (número de pasajeros en cola), 'Llegadas' (número total de llegadas), 'Servicio i' (estado del i-ésimo servidor),
+      'stay' (tiempo hasta el próximo evento), 'nextL' (próximo tiempo de llegada), 'nextS i' (próximo tiempo de servicio
+      para el i-ésimo servidor) y 'Servidores activos' (número total de servidores activos en ese momento).
+    """
+    
     np.random.seed(seed)
     df_lambdas= tabla_lambdas(14,plot=False)
     cmax = c
@@ -123,6 +142,26 @@ def aeropuerto(seed = 12345, freq = 30, time = 720, c = 5, Cola_max = 35, servic
     return data_aero, Cola_max, cmax
 
 def metricas(df, Cola_max):
+    """
+    Calcula diversas métricas a partir de los datos de una simulación de un sistema de atención de pasajeros en un aeropuerto.
+
+    Parámetros:
+    - df (DataFrame): DataFrame que contiene la información de la simulación, con columnas como 't' (tiempo),
+      'Cola' (número de pasajeros en cola), 'Llegadas' (número total de llegadas), 'Servicio i' (estado del i-ésimo servidor),
+      'stay' (tiempo hasta el próximo evento), 'nextL' (próximo tiempo de llegada), 'nextS i' (próximo tiempo de servicio
+      para el i-ésimo servidor) y 'Servidores activos' (número total de servidores activos en ese momento).
+
+    Retorna:
+    - Wq (float): Tiempo medio de los clientes en cola.
+    - Lq (float): Número medio de los clientes en cola.
+    - L (float): Número medio de clientes en el sistema.
+    - W (float): Tiempo medio de los clientes en el sistema.
+    - Nh (DataFrame): Número medio de clientes por hora.
+    - Ts (float): Número medio de servidores abiertos.
+    - Ns (DataFrame): Tiempo de servidores abiertos para cada servidor.
+    - llegadas_pax (float): Número total de llegadas.
+    - TEPP_01 (float): Porcentaje de clientes en el sistema que están más de 10 minutos en cola.
+    """
     
     c = max(df['Servidores activos'])
     cmax = c
