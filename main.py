@@ -178,7 +178,9 @@ def metricas(df, Cola_max):
         Ns.append({'Servidor': i, 'Tiempo_Activo': tiempo_servidor_i_activo})
     Ns = pd.DataFrame(Ns)
     
+    #Coste de operativa
 
+    coste= Ns['Tiempo_Activo'].sum()
     
     # Porcentaje de clientes en el sistema que están más de 10 minutos en cola.
     
@@ -188,7 +190,7 @@ def metricas(df, Cola_max):
         
     TEPP_01 = 100 - (100 * Wq_out/llegadas_pax)
     
-    return Wq, Lq, L, W, Nh, Ts, Ns, llegadas_pax, TEPP_01, wait_times
+    return Wq, Lq, L, W, Nh, Ts, Ns, llegadas_pax, TEPP_01, wait_times,coste
 
 
 
@@ -202,7 +204,7 @@ if __name__=='__main__':
     # Resumen del servicio
     summary_servicio = data_aero.groupby('Llegadas')['stay'].sum().reset_index()
 
-    Wq, Lq, L, W, Nh, Ts, Ns, llegadas_pax, TEPP_01, wait_times = metricas(df=data_aero, Cola_max = Cola_max)
+    Wq, Lq, L, W, Nh, Ts, Ns, llegadas_pax, TEPP_01, wait_times,coste = metricas(df=data_aero, Cola_max = Cola_max)
 
     # Imprime las métricas
     print("Tiempo medio de los clientes en cola (Wq):", Wq)
@@ -215,6 +217,7 @@ if __name__=='__main__':
     print("Tiempo de servidores abiertos (Ns):")
     print(Ns)
     print("Número total de llegadas:", llegadas_pax)
+    print("Coste total de la operativa:", round(coste))
     print("Porcentaje de clientes en el sistema que están más de 10 minutos en cola (TEPP_01):", round(TEPP_01,3), '%')
 
 
