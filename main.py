@@ -10,12 +10,11 @@ from datetime import datetime
 from matplotlib.ticker import MaxNLocator
 
 
-# Importar modulos
-
+# Importar modulo que carga los datos de entrada (día tipo de un aeropuerto)
 from input import tabla_lambdas
 
-def aeropuerto(seed = 12345, freq = 30, time = 720, c = 5, Cola_max = 35, service_time = np.array([0.5, 1, 1.5]),
-               probabilities_nextS = [0.25, 0.6, 0.15]):
+def aeropuerto(seed = 12345, freq = 30, time = 720, c = 4, Cola_max = 35, service_time = np.array([0.5, 1, 1.5]),
+               probabilities_nextS = [0.25, 0.6, 0.15], plot=True):
 
     np.random.seed(seed)
     df_lambdas= tabla_lambdas(14,plot=False)
@@ -122,7 +121,7 @@ def aeropuerto(seed = 12345, freq = 30, time = 720, c = 5, Cola_max = 35, servic
         })
         
     data_aero = pd.DataFrame(data_list, columns=columns)
-    
+
     return data_aero, Cola_max, cmax
 
 def metricas(df, Cola_max):
@@ -192,11 +191,60 @@ def metricas(df, Cola_max):
     
     return Wq, Lq, L, W, Nh, Ts, Ns, llegadas_pax, TEPP_01, wait_times,coste
 
+def plot_grafico():
+    # Gráfico
+    redimension_pax = float(data_aero['Llegadas'].tail(
+        1)) / 100  # Este valor hace que la linea de llegadas represente los pasajeros acumulados durante el día (en porcentaje)
 
+    fig, ax = plt.subplots(1, 2, figsize=(
+    15, 6))  # Crea un segundo eje para representar el acumulado de las llegadas durante el día en porcentaje
+    ax3 = ax[0].twinx()
+
+    ax3.tick_params(axis='y', labelcolor='red')
+    ax3.yaxis.label.set_color('red')
+    ax3.tick_params(axis='y', colors='red')
+
+    ax3.set_ylabel('% llegadas')
+    ax3.plot(data_aero['t'], data_aero['Llegadas'] / redimension_pax, color='red', drawstyle='steps', label='Llegadas')
+    ax3.legend(loc='upper right')
+
+    # for i in range(cmax):
+    #     ax[0].plot(data_aero['t'], data_aero[f'Servicio {i + 1}'], drawstyle='steps', label=f'Servicio {i + 1}')
+    ax[0].plot(data_aero['t'], data_aero['Cola'], color='purple', drawstyle='steps', label='Cola', linewidth=1)
+    ax[0].text(350, Cola_max + 0.5, f'Cola máx.', fontsize=8, color='black', verticalalignment='center')
+    ax[0].axhline(Cola_max, linestyle='dotted', linewidth=0.8, color='black')
+    ax[0].set_xlabel('Tiempo (min)')
+    ax[0].set_ylabel('Pasajeros en cola')
+    ax[0].set_ylim(0, )
+    ax[0].set_xlim(0, )
+    ax[0].legend(loc='upper left')
+    # ax[0].grid()
+    ax[0].set_title('Número de llegadas y pasajeros en cola', color='#890000')
+
+    colores = ['#ff3333', '#331100', '#660000', '#880000', '#ff0000'] * 2
+    ax[1].yaxis.set_major_locator(MaxNLocator(integer=True))
+    for i in range(1, cmax + 1, 1):
+        data_aero[f'Servicio {i}'].replace(0, np.nan, inplace=True)
+        ax[1].scatter(data_aero['t'], data_aero[f'Servicio {i}'] + i - 1, linewidths=0.2, color=colores[i], s=2,
+                      marker='x')
+
+    # ax[1].scatter(data_aero['t'],(data_aero['Servidores activos']+0.1),s=10, color= 'green',label = "Serv. Abiertos")
+    ax[1].plot(data_aero['t'], (data_aero['Servidores activos'] + 0.051), linewidth=1, color='black',
+               label="Serv. Abiertos")
+
+    ax[1].plot([],[], ' ', label=f'Coste = {round(coste)} ud.')
+    ax[1].set_ylabel('Servidores')
+    ax[1].set_xlabel('Tiempo (min)')
+
+    ax[1].set_title('Servidores abiertos y en uso', color='#890000')
+    ax[1].legend()
+    fig.tight_layout()
+    fig.savefig(f"resultados_{cmax}.svg")
 
 
 if __name__=='__main__':
-    data_aero, Cola_max, cmax = aeropuerto()
+    #Generar simulación
+    data_aero, Cola_max, cmax = aeropuerto(c=4)
 
     # Resumen de la cola
     summary_cola = data_aero.groupby('Cola')['stay'].sum().reset_index()
@@ -218,49 +266,8 @@ if __name__=='__main__':
     print(Ns)
     print("Número total de llegadas:", llegadas_pax)
     print("Coste total de la operativa:", round(coste))
-    print("Porcentaje de clientes en el sistema que están más de 10 minutos en cola (TEPP_01):", round(TEPP_01,3), '%')
+    print("Porcentaje de clientes en el sistema que están menos de 10 minutos en cola (TEPP_01):", round(TEPP_01,3), '%')
 
+    #Muestra el gráfico
+    plot_grafico()
 
-
-    # Gráfico
-    redimension_pax=float(data_aero['Llegadas'].tail(1))/100 #Este valor hace que la linea de llegadas represente los pasajeros acumulados durante el día (en porcentaje)
-
-    fig,ax=plt.subplots(1,2,figsize=(15,6)) #Crea un segundo eje para representar el acumulado de las llegadas durante el día en porcentaje
-    ax3 = ax[0].twinx()
-
-    ax3.tick_params(axis='y', labelcolor='red')
-    ax3.yaxis.label.set_color('red')
-    ax3.tick_params(axis='y', colors='red')
-
-    ax3.set_ylabel('% llegadas')
-    ax3.plot(data_aero['t'], data_aero['Llegadas'] / redimension_pax, color='red', drawstyle='steps', label='Llegadas')
-    ax3.legend(loc='upper right')
-
-    # for i in range(cmax):
-    #     ax[0].plot(data_aero['t'], data_aero[f'Servicio {i + 1}'], drawstyle='steps', label=f'Servicio {i + 1}')
-    ax[0].plot(data_aero['t'], data_aero['Cola'], color='purple', drawstyle='steps', label='Cola', linewidth=1)
-    ax[0].text(15, Cola_max+0.5, f'{Cola_max}', fontsize=8, color='black',verticalalignment='center')
-    ax[0].axhline(Cola_max,linestyle='dotted', linewidth=0.8, color='black')
-    ax[0].set_xlabel('Tiempo (min)')
-    ax[0].set_ylabel('Pasajeros en cola')
-    ax[0].set_ylim(0,)
-    ax[0].set_xlim(0,)
-    ax[0].legend(loc='upper left')
-    # ax[0].grid()
-    ax[0].set_title('Número de llegadas y pasajeros en cola', color='#890000')
-
-    colores= ['#ff3333','#331100','#660000','#880000','#ff0000']*2
-    ax[1].yaxis.set_major_locator(MaxNLocator(integer=True))
-    for i in range(1,cmax+1,1):
-        data_aero[f'Servicio {i}'].replace(0, np.nan, inplace=True)
-        ax[1].scatter(data_aero['t'],data_aero[f'Servicio {i}']+i-1,linewidths=0.2,color=colores[i], s=2,marker='x')
-
-    # ax[1].scatter(data_aero['t'],(data_aero['Servidores activos']+0.1),s=10, color= 'green',label = "Serv. Abiertos")
-    ax[1].plot(data_aero['t'],(data_aero['Servidores activos']+0.051),linewidth=1, color= 'black',label = "Serv. Abiertos")
-    ax[1].legend()
-    ax[1].set_ylabel('Servidores')
-    ax[1].set_xlabel('Tiempo (min)')
-
-    ax[1].set_title('Servidores abiertos y en uso',color='#890000')
-
-    fig.tight_layout()
