@@ -24,3 +24,5 @@ Una vez ejecutado el comando, se instalan los ficheros.
 En una consola tipo bash (Mac o Linux) o Powershell (Windows) con Python instalado, ejecutar el siguiente código en el directorio donde se han extraído los archivos:
 `python main.py`.
 Si el código se ejecuta sobre un entorno Jupyter, se puede ver más cómodamente las representaciones gráficas.
+
+NOTA: Hay pocos commit porque este github se ha extraído de un entorno de pruebas: https://github.com/alvaroffm/TMON_filtro_aero.
