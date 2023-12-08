@@ -1,0 +1,38 @@
+SIMULACIÓN AEROPUERTO;
+Inicialización variables;
+while(MIENTRAS QUE 
+El tiempo sea inferior
+al tiempo de simulación) {
+  t = tiempo prox llegada;
+  if (SI la próxima llegada se produce 
+  antes que la próxima salida.) {
+    if (SI hay algún servidor libre) {
+      Se pone a ese servidor en 
+      marcha y se le asigna un 
+      tiempo de fin de servicio.
+    } else {
+      Cola + 1
+    }
+    Llegadas + 1
+    nextL = t + tiempoL
+  } else {
+    t = tiempo servidor
+    que acaba primero
+  } if (SI Cola = 0) {
+    Si no hay cola,
+    El servidor permanece vacío
+    Servicio[i] = 0
+  } else {
+    Un pasajero de la cola
+    ocupa el servidor.
+    Cola - 1
+    Servicio[i] + 1
+  } 
+  Nuevo tiempo de servicio 
+  = t + tiempoS;
+  Para cada hora;
+  OPTIMIZACIÓN SERVIDORES;
+} Guardar resultados;
+Graficar resultaods;
+Obtener métricas;
+  
